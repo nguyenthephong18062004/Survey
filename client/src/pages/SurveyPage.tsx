@@ -1,4 +1,4 @@
-import { useState, type FormEvent, useEffect, useMemo } from 'react'
+import { useState, type FormEvent, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ClipboardCheck, ArrowLeft, CheckCircle } from 'lucide-react'
 import { surveyAPI, assignmentAPI as surveyAssignmentAPI } from '../api'
@@ -37,6 +37,7 @@ export default function SurveyPage() {
 
   const selectedAssignment = assignments.find(a => a.assignmentId === selectedAssignmentId)
   const selectedSurvey = selectedAssignment ? surveys.find(s => s.id === selectedAssignment.surveyId) : null
+  const selectedSurveyTitle = selectedSurvey?.title || selectedAssignment?.surveyTitle || ''
   const surveyQuestions = selectedSurvey?.questions || []
 
   const handleSubmit = async (e: FormEvent) => {
@@ -104,36 +105,46 @@ export default function SurveyPage() {
               <ClipboardCheck className="w-7 h-7 text-red-600" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Thực hiện khảo sát môn học</h1>
-              <p className="text-gray-600 mt-1">Vui lòng đánh giá chất lượng giảng dạy của môn học</p>
+              <h1 className="text-3xl font-bold text-gray-900">Thực hiện khảo sát </h1>
+              <p className="text-gray-600 mt-1">Vui lòng đánh giá khảo sát để nâng cao chất lượng giảng dạy của nhà trường</p>
             </div>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-8">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-3">Chọn môn học cần đánh giá <span className="text-red-500">*</span></label>
+              <label className="block text-sm font-medium text-gray-700 mb-3">Chọn khảo sát cần đánh giá <span className="text-red-500">*</span></label>
               {assignments.length === 0 ? (
                 <div className="p-4 bg-yellow-50 text-yellow-800 rounded-lg border border-yellow-200">
-                  Hiện tại không có khảo sát môn học nào được giao cho bạn hoặc bạn đã hoàn thành tất cả.
+                  Hiện tại không có khảo sát  nào được giao cho bạn hoặc bạn đã hoàn thành tất cả.
                 </div>
               ) : (
                 <div className="grid grid-cols-1 gap-3">
-                  {assignments.map((assignment) => (
-                    <label key={assignment.assignmentId} className={`flex items-center p-4 border-2 rounded-lg cursor-pointer transition-all ${selectedAssignmentId === assignment.assignmentId ? 'border-blue-600 bg-blue-50' : 'border-gray-200 hover:border-gray-300'}`}>
-                      <input type="radio" name="assignment" value={assignment.assignmentId} checked={selectedAssignmentId === assignment.assignmentId} onChange={(e) => { setSelectedAssignmentId(Number(e.target.value)); setErrors('') }} className="w-4 h-4 text-blue-600" />
-                      <div className="ml-3 flex-1">
-                        <div className="font-medium text-gray-900">{assignment.subjectCode} - {assignment.subjectName}</div>
-                        <div className="text-sm text-gray-600">Giảng viên: {assignment.lecturerName}</div>
-                      </div>
-                    </label>
-                  ))}
+                  {assignments.map((assignment) => {
+                    const assignmentTitle = assignment.subjectCode && assignment.subjectName
+                      ? `${assignment.subjectCode} - ${assignment.subjectName}`
+                      : assignment.surveyTitle || 'Khảo sát chung';
+
+                    return (
+                      <label key={assignment.assignmentId} className={`flex items-center p-4 border-2 rounded-lg cursor-pointer transition-all ${selectedAssignmentId === assignment.assignmentId ? 'border-blue-600 bg-blue-50' : 'border-gray-200 hover:border-gray-300'}`}>
+                        <input type="radio" name="assignment" value={assignment.assignmentId} checked={selectedAssignmentId === assignment.assignmentId} onChange={(e) => { setSelectedAssignmentId(Number(e.target.value)); setErrors('') }} className="w-4 h-4 text-blue-600" />
+                        <div className="ml-3 flex-1">
+                          <div className="font-medium text-gray-900">{assignmentTitle}</div>
+                          {assignment.subjectCode && assignment.subjectName ? (
+                            <div className="text-sm text-gray-600">Giảng viên: {assignment.lecturerName}</div>
+                          ) : (
+                            <div className="text-sm text-gray-600">Loại khảo sát: chung toàn trường</div>
+                          )}
+                        </div>
+                      </label>
+                    )
+                  })}
                 </div>
               )}
             </div>
 
             {selectedAssignment && selectedSurvey && (
               <>
-                <h3 className="text-xl font-semibold text-gray-900 mb-4">{selectedSurvey.title}</h3>
+                <h3 className="text-xl font-semibold text-gray-900 mb-4">{selectedSurveyTitle}</h3>
                 {surveyQuestions.map((question: any, index: number) => (
                   <div key={question.id} className="space-y-3">
                     <label className="block text-sm font-medium text-gray-700">{index + 1}. {question.question} <span className="text-red-500">*</span></label>

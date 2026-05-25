@@ -112,24 +112,50 @@ router.get('/school', requireAuth, async (req, res) => {
     const [studentCount] = await pool.query('SELECT COUNT(*) as count FROM users WHERE role = "student"');
     const [surveyCount] = await pool.query('SELECT COUNT(*) as count FROM surveys WHERE isDeleted = FALSE');
     
-    // Get top performing subjects based on average rating (using submission averages)
-    const [topSubjects] = await pool.query(`
+    // Get average score per subject based on subject-specific survey submissions
+    const [subjectAverages] = await pool.query(`
       SELECT 
         s.id, s.name, s.code, s.lecturerName,
         AVG(SubmissionAvg.avgScore) as overallRating,
-        COUNT(SubmissionAvg.submissionId) as totalResponses
+        COUNT(DISTINCT ac.studentId) as totalResponses
       FROM subjects s
       JOIN survey_assignments sa ON sa.subjectId = s.id
       JOIN (
           SELECT assignmentId, submissionId, AVG(ratingValue) as avgScore
           FROM survey_responses
-          WHERE ratingValue IS NOT NULL AND submissionId IS NOT NULL
+          WHERE ratingValue IS NOT NULL
           GROUP BY assignmentId, submissionId
       ) as SubmissionAvg ON SubmissionAvg.assignmentId = sa.id
+      LEFT JOIN assignment_completions ac ON ac.assignmentId = sa.id
       WHERE s.isDeleted = FALSE
       GROUP BY s.id
+      HAVING overallRating IS NOT NULL
       ORDER BY overallRating DESC
-      LIMIT 10
+    `);
+
+    const topSubjects = subjectAverages.slice(0, 5);
+
+    // Get top general surveys based on average score
+    const [topGeneralSurveys] = await pool.query(`
+      SELECT 
+        sa.surveyId,
+        s.title as surveyTitle,
+        COUNT(DISTINCT ac.studentId) as totalResponses,
+        AVG(SubmissionAvg.avgScore) as overallRating
+      FROM survey_assignments sa
+      JOIN surveys s ON s.id = sa.surveyId
+      JOIN (
+          SELECT assignmentId, submissionId, AVG(ratingValue) as avgScore
+          FROM survey_responses
+          WHERE ratingValue IS NOT NULL
+          GROUP BY assignmentId, submissionId
+      ) as SubmissionAvg ON SubmissionAvg.assignmentId = sa.id
+      LEFT JOIN assignment_completions ac ON ac.assignmentId = sa.id
+      WHERE sa.subjectId IS NULL
+      GROUP BY sa.surveyId
+      HAVING overallRating IS NOT NULL
+      ORDER BY overallRating DESC
+      LIMIT 5
     `);
 
     // Get general survey submission scores (where subjectId is NULL)
@@ -151,9 +177,19 @@ router.get('/school', requireAuth, async (req, res) => {
       totalSubjects: subjectCount[0].count,
       totalStudents: studentCount[0].count,
       totalSurveys: surveyCount[0].count,
+      subjectAverages: subjectAverages.map(sub => ({
+        ...sub,
+        overallRating: sub.overallRating ? parseFloat(sub.overallRating).toFixed(2) : 0
+      })),
       topSubjects: topSubjects.map(sub => ({
         ...sub,
-        overallRating: sub.overallRating ? parseFloat(sub.overallRating).toFixed(1) : 0
+        overallRating: sub.overallRating ? parseFloat(sub.overallRating).toFixed(2) : 0
+      })),
+      topGeneralSurveys: topGeneralSurveys.map(sub => ({
+        surveyId: sub.surveyId,
+        surveyTitle: sub.surveyTitle,
+        totalResponses: sub.totalResponses,
+        overallRating: sub.overallRating ? parseFloat(sub.overallRating).toFixed(2) : 0
       })),
       generalSubmissionScores: generalSubmissionScores.map(s => ({
         submissionId: s.submissionId,

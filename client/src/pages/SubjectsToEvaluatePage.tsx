@@ -19,7 +19,7 @@ export default function SubjectsToEvaluatePage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [filterStatus, setFilterStatus] = useState<'all' | 'submitted' | 'pending'>('all')
   
-  const [mockSubjects, setMockSubjects] = useState<EvaluateSubject[]>([])
+  const [subjects, setSubjects] = useState<EvaluateSubject[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -38,7 +38,7 @@ export default function SubjectsToEvaluatePage() {
           status: a.isCompleted ? 'submitted' : 'pending'
         }))
         
-        setMockSubjects(evaluatedData)
+        setSubjects(evaluatedData)
       } catch (error) {
         console.error('Failed to load data:', error)
       } finally {
@@ -50,24 +50,24 @@ export default function SubjectsToEvaluatePage() {
 
   const filtered = useMemo(
     () =>
-      mockSubjects.filter((subject) => {
+      subjects.filter((subject) => {
         const matchesFilter = filterStatus === 'all' || subject.status === filterStatus
         const q = searchTerm.toLowerCase()
         const matchesSearch = subject.code.toLowerCase().includes(q) || subject.name.toLowerCase().includes(q) || subject.teacher.toLowerCase().includes(q)
         return matchesFilter && matchesSearch
       }),
-    [mockSubjects, filterStatus, searchTerm],
+    [subjects, filterStatus, searchTerm],
   )
 
-  const submitted = mockSubjects.filter((s) => s.status === 'submitted').length
-  const pending = mockSubjects.filter((s) => s.status === 'pending').length
+  const submitted = subjects.filter((s) => s.status === 'submitted').length
+  const pending = subjects.filter((s) => s.status === 'pending').length
 
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center">Loading subjects...</div>
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="min-h-screen bg-linear-to-br from-gray-50 to-gray-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex items-center gap-4 mb-8">
           <button onClick={() => navigate('/')} className="p-2 hover:bg-white rounded-lg transition-colors">
@@ -80,7 +80,7 @@ export default function SubjectsToEvaluatePage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <div className="bg-white rounded-xl shadow-sm p-5"><p className="text-sm text-gray-600">Tổng số môn</p><p className="text-3xl font-bold">{mockSubjects.length}</p></div>
+          <div className="bg-white rounded-xl shadow-sm p-5"><p className="text-sm text-gray-600">Tổng số môn</p><p className="text-3xl font-bold">{subjects.length}</p></div>
           <div className="bg-white rounded-xl shadow-sm p-5"><p className="text-sm text-gray-600">Đã gửi</p><p className="text-3xl font-bold text-green-600">{submitted}</p></div>
           <div className="bg-white rounded-xl shadow-sm p-5"><p className="text-sm text-gray-600">Chưa gửi</p><p className="text-3xl font-bold text-red-600">{pending}</p></div>
         </div>
