@@ -232,7 +232,7 @@ export function DashboardPage() {
                   alt="Avatar" 
                   className="w-10 h-10 rounded-full object-cover border-2 border-white/20 bg-white"
                 />
-                <div className="flex flex-col text-white hidden sm:flex">
+                <div className="hidden sm:flex flex-col text-white">
                   <span className="text-[0.9rem] font-medium leading-tight">{(user as any).fullName || user.name}</span>
                   <span className="text-[0.8rem] opacity-90">{displayId}</span>
                 </div>
@@ -259,15 +259,26 @@ export function DashboardPage() {
                   
                   <div className="my-2 border-t border-gray-100/80"></div>
                   
-                  <div 
-                    onClick={() => { setIsDropdownOpen(false); navigate('/update-info'); }}
+                  {['student', 'lecturer', 'teacher'].includes(user?.role || '') && (
+                    <div 
+                      onClick={() => { setIsDropdownOpen(false); navigate('/update-info'); }}
+                      className="px-4 py-2.5 flex items-center gap-3 hover:bg-blue-50/50 transition-colors cursor-pointer text-gray-700"
+                    >
+                      <User className="w-5 h-5 text-gray-600 shrink-0" />
+                      <span className="text-[0.95rem]">Thông tin cá nhân</span>
+                    </div>
+                  )}
+                  {['student', 'lecturer', 'teacher'].includes(user?.role || '') && (
+                    <div className="my-2 border-t border-gray-100/80"></div>
+                  )}
+                  
+                  <div
+                    onClick={() => {
+                      setIsDropdownOpen(false)
+                      navigate('/login/forgot')
+                    }}
                     className="px-4 py-2.5 flex items-center gap-3 hover:bg-blue-50/50 transition-colors cursor-pointer text-gray-700"
                   >
-                    <User className="w-5 h-5 text-gray-600 shrink-0" />
-                    <span className="text-[0.95rem]">Thông tin cá nhân</span>
-                  </div>
-                  
-                  <div className="px-4 py-2.5 flex items-center gap-3 hover:bg-blue-50/50 transition-colors cursor-pointer text-gray-700">
                     <Lock className="w-5 h-5 text-gray-600 shrink-0" />
                     <span className="text-[0.95rem]">Đổi mật khẩu</span>
                   </div>
@@ -342,14 +353,14 @@ export function DashboardPage() {
                   setShowLoginModal(false)
                   navigate('/login')
                 }}
-                className="flex-1 min-w-[120px] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                className="flex-1 min-w-30 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
               >
                 Đăng nhập ngay
               </button>
               <button
                 type="button"
                 onClick={() => setShowLoginModal(false)}
-                className="flex-1 min-w-[120px] px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium"
+                className="flex-1 min-w-30 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium"
               >
                 Hủy
               </button>

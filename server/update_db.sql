@@ -35,3 +35,13 @@ CREATE TABLE IF NOT EXISTS assignment_completions (
 -- 4. Bỏ bắt buộc môn học và học kỳ đối với Khảo sát chung
 ALTER TABLE survey_assignments MODIFY subjectId INT NULL;
 ALTER TABLE survey_assignments MODIFY semesterId INT NULL;
+
+-- 5. Cập nhật bảng users để hỗ trợ các trường mới cho Quản lý tài khoản
+-- Chạy đoạn mã này để thêm các cột còn thiếu trong database
+ALTER TABLE users ADD COLUMN username VARCHAR(255) UNIQUE;
+ALTER TABLE users ADD COLUMN department VARCHAR(255);
+ALTER TABLE users ADD COLUMN status ENUM('active', 'inactive') DEFAULT 'active';
+ALTER TABLE users ADD COLUMN lastLogin TIMESTAMP NULL;
+
+-- Cập nhật ENUM của cột role để hỗ trợ các role mới
+ALTER TABLE users MODIFY COLUMN role ENUM('admin', 'teacher', 'student', 'lecturer', 'department', 'academic_affairs') DEFAULT 'student';

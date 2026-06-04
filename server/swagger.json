@@ -1,0 +1,515 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "SurveyUni API",
+    "version": "1.0.0",
+    "description": "API documentation for SurveyUni survey management system."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:5000/api",
+      "description": "Local development server"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "email": { "type": "string" },
+          "username": { "type": "string" },
+          "fullName": { "type": "string" },
+          "role": { "type": "string" },
+          "department": { "type": "string" },
+          "status": { "type": "string" }
+        }
+      },
+      "Subject": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "code": { "type": "string" },
+          "name": { "type": "string" },
+          "credits": { "type": "integer" },
+          "description": { "type": "string" },
+          "lecturerName": { "type": "string" },
+          "lecturerEmail": { "type": "string" },
+          "status": { "type": "string" }
+        }
+      },
+      "Survey": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "title": { "type": "string" },
+          "description": { "type": "string" },
+          "status": { "type": "string" },
+          "questions": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Question" }
+          }
+        }
+      },
+      "Question": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "surveyId": { "type": "integer" },
+          "question": { "type": "string" },
+          "type": { "type": "string" }
+        }
+      },
+      "Semester": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "name": { "type": "string" },
+          "startDate": { "type": "string", "format": "date" },
+          "endDate": { "type": "string", "format": "date" },
+          "status": { "type": "string" }
+        }
+      },
+      "Assignment": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "surveyId": { "type": "integer" },
+          "subjectId": { "type": "integer" },
+          "semesterId": { "type": "integer" },
+          "startDate": { "type": "string", "format": "date" },
+          "endDate": { "type": "string", "format": "date" },
+          "status": { "type": "string" }
+        }
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "paths": {
+    "/auth/register": {
+      "post": {
+        "summary": "Register a new user",
+        "tags": ["Auth"],
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": { "type": "string" },
+                  "password": { "type": "string" },
+                  "name": { "type": "string" },
+                  "role": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "User created" }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "summary": "Login user",
+        "tags": ["Auth"],
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": { "type": "string" },
+                  "password": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Login successful" }
+        }
+      }
+    },
+    "/auth/me": {
+      "get": {
+        "summary": "Get current logged in user",
+        "tags": ["Auth"],
+        "responses": {
+          "200": { "description": "Current user details" }
+        }
+      }
+    },
+    "/users": {
+      "get": {
+        "summary": "Get all users",
+        "tags": ["Users"],
+        "responses": {
+          "200": {
+            "description": "List of users",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/User" }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a user",
+        "tags": ["Users"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/User" }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Created user" }
+        }
+      }
+    },
+    "/users/{id}": {
+      "put": {
+        "summary": "Update a user",
+        "tags": ["Users"],
+        "parameters": [
+          { "in": "path", "name": "id", "required": true, "schema": { "type": "integer" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/User" }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Updated user" }
+        }
+      },
+      "delete": {
+        "summary": "Delete a user",
+        "tags": ["Users"],
+        "parameters": [
+          { "in": "path", "name": "id", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "Deleted successfully" }
+        }
+      }
+    },
+    "/subjects": {
+      "get": {
+        "summary": "Get all subjects",
+        "tags": ["Subjects"],
+        "responses": {
+          "200": { "description": "List of subjects" }
+        }
+      },
+      "post": {
+        "summary": "Create a subject",
+        "tags": ["Subjects"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/Subject" }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Subject created" }
+        }
+      }
+    },
+    "/subjects/{id}": {
+      "get": {
+        "summary": "Get subject by ID",
+        "tags": ["Subjects"],
+        "parameters": [
+          { "in": "path", "name": "id", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "Subject details" }
+        }
+      },
+      "put": {
+        "summary": "Update a subject",
+        "tags": ["Subjects"],
+        "parameters": [
+          { "in": "path", "name": "id", "required": true, "schema": { "type": "integer" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/Subject" }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Subject updated" }
+        }
+      },
+      "delete": {
+        "summary": "Delete a subject",
+        "tags": ["Subjects"],
+        "parameters": [
+          { "in": "path", "name": "id", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "Subject deleted" }
+        }
+      }
+    },
+    "/surveys": {
+      "get": {
+        "summary": "Get all surveys",
+        "tags": ["Surveys"],
+        "responses": {
+          "200": { "description": "List of surveys" }
+        }
+      },
+      "post": {
+        "summary": "Create a survey",
+        "tags": ["Surveys"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/Survey" }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Created survey" }
+        }
+      }
+    },
+    "/surveys/{id}": {
+      "put": {
+        "summary": "Update a survey",
+        "tags": ["Surveys"],
+        "parameters": [
+          { "in": "path", "name": "id", "required": true, "schema": { "type": "integer" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/Survey" }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Survey updated" }
+        }
+      },
+      "delete": {
+        "summary": "Delete a survey",
+        "tags": ["Surveys"],
+        "parameters": [
+          { "in": "path", "name": "id", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "Survey deleted" }
+        }
+      }
+    },
+    "/surveys/{assignmentId}/submit": {
+      "post": {
+        "summary": "Submit a survey response",
+        "tags": ["Surveys"],
+        "parameters": [
+          { "in": "path", "name": "assignmentId", "required": true, "schema": { "type": "integer" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "responses": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "questionId": { "type": "integer" },
+                        "ratingValue": { "type": "integer" },
+                        "textValue": { "type": "string" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Survey submitted successfully" }
+        }
+      }
+    },
+    "/semesters": {
+      "get": {
+        "summary": "Get all semesters",
+        "tags": ["Semesters"],
+        "responses": {
+          "200": { "description": "List of semesters" }
+        }
+      },
+      "post": {
+        "summary": "Create a semester",
+        "tags": ["Semesters"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/Semester" }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Created semester" }
+        }
+      }
+    },
+    "/semesters/{id}": {
+      "put": {
+        "summary": "Update a semester",
+        "tags": ["Semesters"],
+        "parameters": [
+          { "in": "path", "name": "id", "required": true, "schema": { "type": "integer" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/Semester" }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Semester updated" }
+        }
+      },
+      "delete": {
+        "summary": "Delete a semester",
+        "tags": ["Semesters"],
+        "parameters": [
+          { "in": "path", "name": "id", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "Semester deleted" }
+        }
+      }
+    },
+    "/assignments": {
+      "get": {
+        "summary": "Get all assignments",
+        "tags": ["Assignments"],
+        "responses": {
+          "200": { "description": "List of assignments" }
+        }
+      },
+      "post": {
+        "summary": "Create an assignment",
+        "tags": ["Assignments"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/Assignment" }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Assignment created" }
+        }
+      }
+    },
+    "/assignments/student/me": {
+      "get": {
+        "summary": "Get assignments for current student",
+        "tags": ["Assignments"],
+        "responses": {
+          "200": { "description": "List of student's assignments" }
+        }
+      }
+    },
+    "/assignments/{id}": {
+      "put": {
+        "summary": "Update an assignment",
+        "tags": ["Assignments"],
+        "parameters": [
+          { "in": "path", "name": "id", "required": true, "schema": { "type": "integer" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/Assignment" }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Assignment updated" }
+        }
+      },
+      "delete": {
+        "summary": "Delete an assignment",
+        "tags": ["Assignments"],
+        "parameters": [
+          { "in": "path", "name": "id", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "Assignment deleted" }
+        }
+      }
+    },
+    "/reports/subject/{subjectId}": {
+      "get": {
+        "summary": "Get report for a specific subject",
+        "tags": ["Reports"],
+        "parameters": [
+          { "in": "path", "name": "subjectId", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "Report data" }
+        }
+      }
+    },
+    "/reports/school": {
+      "get": {
+        "summary": "Get overall school report",
+        "tags": ["Reports"],
+        "responses": {
+          "200": { "description": "School report data" }
+        }
+      }
+    }
+  }
+}

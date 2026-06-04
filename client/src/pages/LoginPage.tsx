@@ -12,10 +12,11 @@ import {
   Building,
   UserCog,
   Shield,
+  type LucideIcon,
 } from 'lucide-react'
 import { useAuth, type UserRole } from '../contexts/AuthContext'
 
-const roleInfo: Record<UserRole, { name: string; icon: typeof GraduationCap; color: string; ring: string; btn: string }> =
+const roleInfo: Record<UserRole, { name: string; icon: LucideIcon; color: string; ring: string; btn: string }> =
   {
     student: { name: 'Sinh viên', icon: GraduationCap, color: 'blue', ring: 'focus:ring-blue-500', btn: 'bg-blue-600 hover:bg-blue-700' },
     lecturer: { name: 'Giảng viên', icon: BookOpen, color: 'green', ring: 'focus:ring-green-500', btn: 'bg-green-600 hover:bg-green-700' },
@@ -110,11 +111,11 @@ export function LoginPage() {
     }
     setLoading(true)
     try {
-      const success = await login(username.trim(), password)
-      if (success) {
+      const result = await login(username.trim(), password, selectedRole)
+      if (result.success) {
         navigate('/')
       } else {
-        setError('Tên đăng nhập hoặc mật khẩu không đúng')
+        setError(result.error || 'Tên đăng nhập hoặc mật khẩu không đúng')
       }
     } catch {
       setError('Đã xảy ra lỗi, vui lòng thử lại')
@@ -245,7 +246,7 @@ export function LoginPage() {
           </Link>
         </p>
         <div className="text-center mt-4 text-gray-500 text-sm">
-          <p>© 2026 Trường Đại học Công nghệ Thông tin - UIT</p>
+          <p>© 2026 Trường Đại học  HUMG</p>
         </div>
       </div>
     </div>

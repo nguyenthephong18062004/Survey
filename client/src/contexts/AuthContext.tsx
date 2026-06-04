@@ -6,15 +6,20 @@ export type UserRole = 'student' | 'lecturer' | 'department' | 'academic_affairs
 export interface AuthUser {
   id: number
   name: string
+  fullName?: string
+  username?: string
   email: string
   role: UserRole
+  department?: string
+  status?: string
 }
 
 interface AuthContextType {
   user: AuthUser | null
   isAuthenticated: boolean
-  login: (username: string, password: string) => Promise<boolean>
+  login: (username: string, password: string, expectedRole?: string) => Promise<{success: boolean, error?: string}>
   logout: () => void
+  updateUser: (updates: Partial<AuthUser>) => void
   hasPermission: (path: string) => boolean
 }
 
@@ -68,16 +73,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     initAuth()
   }, [])
 
-  const login = async (email: string, password: string): Promise<boolean> => {
+  const login = async (email: string, password: string, expectedRole?: string): Promise<{success: boolean, error?: string}> => {
     try {
       const data = await authAPI.login({ email, password })
+      if (expectedRole && data.user.role !== expectedRole) {
+        return { success: false, error: 'Tài khoản không thuộc vai trò này' }
+      }
       localStorage.setItem('token', data.token)
       localStorage.setItem('userRole', data.user.role)
       setUser(data.user)
-      return true
-    } catch (error) {
+      return { success: true }
+    } catch (error: any) {
       console.error('Login failed', error)
-      return false
+      return { success: false, error: error.message || 'Tên đăng nhập hoặc mật khẩu không đúng' }
     }
   }
 
@@ -85,6 +93,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null)
     localStorage.removeItem('token')
     localStorage.removeItem('userRole')
+  }
+
+  const updateUser = (updates: Partial<AuthUser>) => {
+    setUser((prev) => (prev ? { ...prev, ...updates } : prev))
   }
 
   const hasPermission = (path: string): boolean => {
@@ -98,7 +110,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated: !!user, login, logout, hasPermission }}>
+    <AuthContext.Provider value={{ user, isAuthenticated: !!user, login, logout, updateUser, hasPermission }}>
       {children}
     </AuthContext.Provider>
   )

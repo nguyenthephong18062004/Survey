@@ -15,7 +15,10 @@ export const authAPI = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(credentials)
     });
-    if (!res.ok) throw new Error('Login failed');
+    if (!res.ok) {
+      const err = await res.json().catch(() => null);
+      throw new Error(err?.message || 'Login failed');
+    }
     return res.json();
   },
   register: async (userData: any) => {
@@ -24,7 +27,10 @@ export const authAPI = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(userData)
     });
-    if (!res.ok) throw new Error('Registration failed');
+    if (!res.ok) {
+      const err = await res.json().catch(() => null);
+      throw new Error(err?.message || 'Registration failed');
+    }
     return res.json();
   },
   getMe: async () => {
@@ -173,6 +179,10 @@ export const assignmentAPI = {
 export const userAPI = {
   getAll: async () => {
     const res = await fetch(`${API_URL}/users`, { headers: getHeaders() });
+    if (!res.ok) {
+      const err = await res.json().catch(() => null);
+      throw new Error(err?.message || 'Failed to fetch users');
+    }
     return res.json();
   },
   create: async (data: any) => {
@@ -181,14 +191,22 @@ export const userAPI = {
       headers: getHeaders(),
       body: JSON.stringify(data)
     });
+    if (!res.ok) {
+      const err = await res.json().catch(() => null);
+      throw new Error(err?.message || 'Create failed');
+    }
     return res.json();
   },
   update: async (id: number, data: any) => {
     const res = await fetch(`${API_URL}/users/${id}`, {
       method: 'PUT',
-      headers: getHeaders(),
+      headers: { ...getHeaders(), 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
     });
+    if (!res.ok) {
+      const error = await res.json().catch(() => null)
+      throw new Error(error?.message || 'Update failed');
+    }
     return res.json();
   },
   delete: async (id: number) => {
