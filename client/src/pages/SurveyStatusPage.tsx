@@ -1,6 +1,7 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { ArrowLeft, CheckCircle2, Clock, Search } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import { assignmentAPI } from '../api'
 
 type StatusItem = {
   id: number
@@ -11,16 +12,36 @@ type StatusItem = {
   submittedDate?: string
 }
 
-const items: StatusItem[] = [
-  { id: 1, code: 'IT001', name: 'Lập trình hướng đối tượng', teacher: 'TS. Nguyễn Văn A', status: 'pending' },
-  { id: 2, code: 'IT002', name: 'Cơ sở dữ liệu', teacher: 'PGS. Trần Thị B', status: 'submitted', submittedDate: '2026-05-01 20:00' },
-  { id: 3, code: 'IT003', name: 'Mạng máy tính', teacher: 'TS. Lê Văn C', status: 'submitted', submittedDate: '2026-05-01 21:30' },
-]
-
 export default function SurveyStatusPage() {
   const navigate = useNavigate()
   const [query, setQuery] = useState('')
   const [filter, setFilter] = useState<'all' | 'submitted' | 'pending'>('all')
+  const [items, setItems] = useState<StatusItem[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const assignments = await assignmentAPI.getStudentAssignments()
+        
+        const statusData = assignments.map((a: any) => ({
+          id: a.assignmentId,
+          code: a.subjectCode || 'Khảo sát chung',
+          name: a.subjectName || a.surveyTitle,
+          teacher: a.lecturerName || 'Trường Đại học',
+          status: a.isCompleted ? 'submitted' : 'pending',
+          submittedDate: a.completedAt ? new Date(a.completedAt).toLocaleString() : undefined
+        }))
+        
+        setItems(statusData)
+      } catch (error) {
+        console.error('Failed to load data:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    loadData()
+  }, [])
 
   const filtered = useMemo(() => {
     return items.filter((item) => {
@@ -29,10 +50,14 @@ export default function SurveyStatusPage() {
       const matchQ = item.code.toLowerCase().includes(q) || item.name.toLowerCase().includes(q) || item.teacher.toLowerCase().includes(q)
       return matchFilter && matchQ
     })
-  }, [filter, query])
+  }, [items, filter, query])
 
   const submitted = items.filter((i) => i.status === 'submitted').length
   const pending = items.filter((i) => i.status === 'pending').length
+
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center">Đang tải dữ liệu...</div>
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">

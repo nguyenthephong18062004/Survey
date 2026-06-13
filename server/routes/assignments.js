@@ -21,7 +21,8 @@ router.get('/student/me', requireAuth, async (req, res) => {
         sub.lecturerName,
         s.id as surveyId,
         s.title as surveyTitle,
-        IF(ac.id IS NOT NULL, true, false) as isCompleted
+        IF(ac.id IS NOT NULL, true, false) as isCompleted,
+        ac.completedAt
       FROM survey_assignments sa
       LEFT JOIN subjects sub ON sa.subjectId = sub.id
       JOIN surveys s ON sa.surveyId = s.id
