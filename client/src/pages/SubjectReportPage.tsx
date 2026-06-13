@@ -42,6 +42,16 @@ export default function SubjectReportPage() {
   }
 
   const handleExport = () => {
+    const fileContent = `Dữ liệu báo cáo môn học\nNgày xuất: ${new Date().toLocaleString()}`;
+    const blob = new Blob([fileContent], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `bao_cao_mon_hoc_${Date.now()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
     alert('Xuất báo cáo thành công!')
   }
 
@@ -101,6 +111,12 @@ export default function SubjectReportPage() {
               <p className="text-gray-600 mt-1">Xem chi tiết báo cáo đánh giá của từng môn học</p>
             </div>
           </div>
+          {subjectReport && (
+            <button onClick={handleExport} className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+              <Download className="w-5 h-5" />
+              <span>Xuất báo cáo</span>
+            </button>
+          )}
         </div>
 
         <div className="bg-white rounded-xl shadow-sm p-6 mb-6">

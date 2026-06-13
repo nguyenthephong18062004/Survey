@@ -90,7 +90,7 @@ export function RoleSelectionPage() {
 
 
         <div className="text-center mt-8 text-gray-500 text-sm">
-          <p>© 2026 Trường Đại học Công nghệ Thông tin - UIT</p>
+          <p>© 2026 Trường Đại học Công nghệ Thông tin - HUMG</p>
         </div>
       </div>
     </div>

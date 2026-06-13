@@ -10,21 +10,21 @@ export default function SurveyManagementPage() {
   const [subjects, setSubjects] = useState<Subject[]>([])
   const [semesters, setSemesters] = useState<Semester[]>([])
   const [assignments, setAssignments] = useState<SurveyAssignment[]>([])
-  
+
   const [loading, setLoading] = useState(true)
   const [showFormModal, setShowFormModal] = useState(false)
   const [showDetailModal, setShowDetailModal] = useState(false)
   const [showAssignModal, setShowAssignModal] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [selectedSurvey, setSelectedSurvey] = useState<Survey | null>(null)
-  
+
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     questions: [] as SurveyQuestion[],
     status: 'active' as 'active' | 'inactive',
   })
-  
+
   const [newQuestion, setNewQuestion] = useState({ question: '', type: 'rating' as 'rating' | 'text' })
   const [formErrors, setFormErrors] = useState<Record<string, string>>({})
   const [assignData, setAssignData] = useState({ subjectIds: [] as string[], isGeneral: false, startDate: '', endDate: '' })
@@ -102,7 +102,7 @@ export default function SurveyManagementPage() {
   const handleSubmitForm = async (e: FormEvent) => {
     e.preventDefault()
     if (!validateForm()) return
-    
+
     try {
       if (isEditing && selectedSurvey) {
         await surveyAPI.update(selectedSurvey.id, {
@@ -141,14 +141,14 @@ export default function SurveyManagementPage() {
   const handleAddQuestion = () => {
     if (!newQuestion.question.trim()) return
     const lines = newQuestion.question.split('\n').map(q => q.trim()).filter(q => q.length > 0)
-    
+
     const newQuestions = lines.map((q, index) => ({
       id: formData.questions.length + index + 1,
       surveyId: 0,
       question: q,
       type: 'rating' as const
     }))
-    
+
     setFormData({ ...formData, questions: [...formData.questions, ...newQuestions] })
     setNewQuestion({ question: '', type: 'rating' })
   }
@@ -165,7 +165,21 @@ export default function SurveyManagementPage() {
       alert('Vui lòng nhập đầy đủ thông tin và chọn ít nhất một môn học (hoặc chọn Gán chung)')
       return
     }
-    
+
+    const start = new Date(assignData.startDate)
+    const end = new Date(assignData.endDate)
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+
+    if (start < today) {
+      alert('Thời gian bắt đầu khảo sát không được nằm trong quá khứ')
+      return
+    }
+    if (end < start) {
+      alert('Ngày kết thúc không được trước ngày bắt đầu')
+      return
+    }
+
     try {
       if (assignData.isGeneral) {
         await surveyAssignmentAPI.create({
@@ -284,35 +298,35 @@ export default function SurveyManagementPage() {
 
 
               <div>
-                  <label className="block text-xl font-semibold text-slate-900 mb-2">Câu hỏi khảo sát <span className="text-red-500">*</span></label>
-                  {formData.questions.length > 0 && (
-                    <div className="mb-3 space-y-2">
-                      {formData.questions.map((q) => (
-                        <div key={q.id} className="flex items-center gap-2 p-3 bg-slate-50 rounded-lg">
-                          <span className="flex-1 text-sm text-slate-900">{q.question}</span>
-                          <button type="button" onClick={() => setFormData({ ...formData, questions: formData.questions.filter((x) => x.id !== q.id) })}>
-                            <Trash2 className="w-4 h-4 text-red-600" />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  <div className="flex flex-col gap-2">
-                    <textarea 
-                      value={newQuestion.question} 
-                      onChange={(e) => setNewQuestion({ ...newQuestion, question: e.target.value })} 
-                      rows={4}
-                      className="w-full px-4 py-3 border border-slate-300 rounded-xl text-lg outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent resize-y" 
-                      placeholder="Nhập nội dung câu hỏi (mỗi câu một dòng để thêm nhiều câu cùng lúc)" 
-                    />
-                    <div className="flex justify-end">
-                      <button type="button" onClick={handleAddQuestion} className="px-6 py-3 bg-violet-600 text-white font-medium rounded-xl hover:bg-violet-700 flex items-center gap-2">
-                        <Plus className="w-5 h-5" /> Thêm câu hỏi
-                      </button>
-                    </div>
+                <label className="block text-xl font-semibold text-slate-900 mb-2">Câu hỏi khảo sát <span className="text-red-500">*</span></label>
+                {formData.questions.length > 0 && (
+                  <div className="mb-3 space-y-2">
+                    {formData.questions.map((q) => (
+                      <div key={q.id} className="flex items-center gap-2 p-3 bg-slate-50 rounded-lg">
+                        <span className="flex-1 text-sm text-slate-900">{q.question}</span>
+                        <button type="button" onClick={() => setFormData({ ...formData, questions: formData.questions.filter((x) => x.id !== q.id) })}>
+                          <Trash2 className="w-4 h-4 text-red-600" />
+                        </button>
+                      </div>
+                    ))}
                   </div>
-                  {formErrors.questions && <p className="text-sm text-red-600 mt-1">{formErrors.questions}</p>}
+                )}
+                <div className="flex flex-col gap-2">
+                  <textarea
+                    value={newQuestion.question}
+                    onChange={(e) => setNewQuestion({ ...newQuestion, question: e.target.value })}
+                    rows={4}
+                    className="w-full px-4 py-3 border border-slate-300 rounded-xl text-lg outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent resize-y"
+                    placeholder="Nhập nội dung câu hỏi (mỗi câu một dòng để thêm nhiều câu cùng lúc)"
+                  />
+                  <div className="flex justify-end">
+                    <button type="button" onClick={handleAddQuestion} className="px-6 py-3 bg-violet-600 text-white font-medium rounded-xl hover:bg-violet-700 flex items-center gap-2">
+                      <Plus className="w-5 h-5" /> Thêm câu hỏi
+                    </button>
+                  </div>
                 </div>
+                {formErrors.questions && <p className="text-sm text-red-600 mt-1">{formErrors.questions}</p>}
+              </div>
 
               <div>
                 <label className="block text-xl font-semibold text-slate-900 mb-2">Trạng thái</label>
@@ -347,10 +361,10 @@ export default function SurveyManagementPage() {
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
             <form onSubmit={handleSubmitAssign} className="space-y-4">
               <h3 className="text-xl font-bold text-gray-900">Gán khảo sát cho môn học</h3>
-              
+
               <label className="flex items-center gap-2 cursor-pointer p-2 bg-indigo-50 border border-indigo-100 rounded-lg">
-                <input 
-                  type="checkbox" 
+                <input
+                  type="checkbox"
                   checked={assignData.isGeneral}
                   onChange={(e) => setAssignData({ ...assignData, isGeneral: e.target.checked })}
                   className="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500"
@@ -363,12 +377,12 @@ export default function SurveyManagementPage() {
                   <p className="text-sm font-medium text-gray-700 mb-2">Chọn các môn học:</p>
                   {subjects.map((subject) => (
                     <label key={subject.id} className="flex items-center gap-2 cursor-pointer p-1 hover:bg-gray-50 rounded">
-                      <input 
-                        type="checkbox" 
+                      <input
+                        type="checkbox"
                         value={subject.id}
                         checked={assignData.subjectIds.includes(String(subject.id))}
                         onChange={(e) => {
-                          const newSubjectIds = e.target.checked 
+                          const newSubjectIds = e.target.checked
                             ? [...assignData.subjectIds, String(subject.id)]
                             : assignData.subjectIds.filter(id => id !== String(subject.id))
                           setAssignData({ ...assignData, subjectIds: newSubjectIds })
@@ -399,7 +413,7 @@ export default function SurveyManagementPage() {
             <h3 className="text-2xl font-bold text-gray-900 mb-4">Chi tiết khảo sát</h3>
             <p className="font-semibold text-gray-900">{selectedSurvey.title}</p>
             <p className="text-gray-700 mt-2 mb-4">{selectedSurvey.description}</p>
-            
+
             {selectedSurvey.questions && (
               <div>
                 <p className="font-medium text-gray-900 mb-2">Câu hỏi:</p>
@@ -410,7 +424,7 @@ export default function SurveyManagementPage() {
                 </ul>
               </div>
             )}
-            
+
             <div className="mt-6 flex justify-end">
               <button onClick={() => setShowDetailModal(false)} className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium">Đóng</button>
             </div>

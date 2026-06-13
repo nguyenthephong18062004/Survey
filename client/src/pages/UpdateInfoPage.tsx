@@ -48,42 +48,50 @@ type GenericForm = {
 }
 
 const getInitialForm = (user: any, role: RoleType) => {
+  let savedProfile: any = {}
+  if (user?.id) {
+    try {
+      const savedStr = localStorage.getItem(`user_profile_${user.id}`)
+      if (savedStr) savedProfile = JSON.parse(savedStr)
+    } catch (e) {}
+  }
+
   const base: GenericForm = {
-    fullName: user?.fullName || user?.name || '',
-    email: user?.email || '',
-    phone: user?.phone || '',
-    address: user?.address || '',
+    fullName: user?.fullName || user?.name || savedProfile?.fullName || '',
+    email: user?.email || savedProfile?.email || '',
+    phone: user?.phone || savedProfile?.phone || '',
+    address: user?.address || savedProfile?.address || '',
   }
 
   if (role === 'student') {
     return {
       ...base,
-      email2: user?.email2 || '',
-      studentId: user?.studentId || user?.username || String(user?.id || ''),
-      dob: user?.dob || '',
-      gender: user?.gender || '',
-      status: user?.status || 'Đang học',
-      idNumber: user?.idNumber || '',
-      ethnicity: user?.ethnicity || '',
-      religion: user?.religion || '',
-      placeOfBirth: user?.placeOfBirth || '',
-      nationality: user?.nationality || 'Việt Nam',
-      className: user?.className || user?.class || '',
-      major: user?.major || '',
-      program: user?.program || 'Chương trình đào tạo Bằng 2 CDIO 4.5 năm hệ CQ',
-      cohort: user?.cohort || '2022-2027',
+      email2: user?.email2 || savedProfile?.email2 || '',
+      studentId: user?.studentId || user?.username || savedProfile?.studentId || String(user?.id || ''),
+      dob: user?.dob || savedProfile?.dob || '',
+      gender: user?.gender || savedProfile?.gender || '',
+      status: user?.status || savedProfile?.status || 'Đang học',
+      idNumber: user?.idNumber || savedProfile?.idNumber || '',
+      ethnicity: user?.ethnicity || savedProfile?.ethnicity || '',
+      religion: user?.religion || savedProfile?.religion || '',
+      placeOfBirth: user?.placeOfBirth || savedProfile?.placeOfBirth || '',
+      nationality: user?.nationality || savedProfile?.nationality || 'Việt Nam',
+      className: user?.className || user?.class || savedProfile?.className || '',
+      major: user?.major || savedProfile?.major || '',
+      program: user?.program || savedProfile?.program || 'Chương trình đào tạo Bằng 2 CDIO 4.5 năm hệ CQ',
+      cohort: user?.cohort || savedProfile?.cohort || '2022-2027',
     } as StudentForm
   }
 
   if (role === 'lecturer' || role === 'teacher') {
     return {
       ...base,
-      email2: user?.email2 || '',
-      employeeId: user?.employeeId || user?.username || String(user?.id || ''),
-      department: user?.department || user?.faculty || '',
-      position: user?.position || 'Giảng viên',
-      office: user?.office || '',
-      specialty: user?.specialty || '',
+      email2: user?.email2 || savedProfile?.email2 || '',
+      employeeId: user?.employeeId || user?.username || savedProfile?.employeeId || String(user?.id || ''),
+      department: user?.department || user?.faculty || savedProfile?.department || '',
+      position: user?.position || savedProfile?.position || 'Giảng viên',
+      office: user?.office || savedProfile?.office || '',
+      specialty: user?.specialty || savedProfile?.specialty || '',
     } as TeacherForm
   }
 
@@ -124,7 +132,8 @@ export default function UpdateInfoPage() {
 
       if (isStudent) {
         payload.username = (form as StudentForm).studentId
-        payload.status = (form as StudentForm).status
+        const rawStatus = (form as StudentForm).status
+        payload.status = (rawStatus === 'active' || rawStatus === 'Đang học') ? 'active' : 'inactive'
         payload.department = ''
       } else if (isInstructor) {
         payload.username = (form as TeacherForm).employeeId
@@ -132,19 +141,26 @@ export default function UpdateInfoPage() {
         payload.status = 'active'
       } else {
         payload.username = user.username || user.email.split('@')[0]
+        payload.status = 'active'
       }
 
       const updatedUser = await userAPI.update(user.id, payload)
-      updateUser({
+      
+      const mergedUser = {
+        ...user,
+        ...form,
         ...updatedUser,
         name: updatedUser.fullName || updatedUser.name || form.fullName,
         email: updatedUser.email || form.email,
         username: updatedUser.username || (isStudent ? (form as StudentForm).studentId : isInstructor ? (form as TeacherForm).employeeId : user.username),
         department: updatedUser.department || (isInstructor ? (form as TeacherForm).department : undefined),
-        status: updatedUser.status || (isStudent ? (form as StudentForm).status : 'active')
-      })
+        status: updatedUser.status || payload.status
+      };
 
-      setForm(getInitialForm({ ...user, ...form, ...updatedUser }, role))
+      updateUser(mergedUser)
+      localStorage.setItem(`user_profile_${user.id}`, JSON.stringify(form))
+
+      setForm(getInitialForm(mergedUser, role))
       alert('Cập nhật thông tin thành công')
     } catch (error: any) {
       console.error(error)
@@ -252,7 +268,6 @@ export default function UpdateInfoPage() {
               { label: 'Số điện thoại', key: 'phone' },
               { label: 'Email 1', key: 'email' },
               { label: 'Email 2', key: 'email2' },
-              { label: 'Văn phòng', key: 'office' },
               { label: 'Chuyên môn', key: 'specialty' },
               { label: 'Địa chỉ', key: 'address', textarea: true },
             ].map((field) => (

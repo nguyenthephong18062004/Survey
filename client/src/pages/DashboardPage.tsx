@@ -98,14 +98,6 @@ const allTiles: Tile[] = [
     Icon: Shield,
   },
   {
-    id: 'update',
-    title: 'Cập nhật thông tin cá nhân',
-    description: 'Cập nhật thông tin hệ thống',
-    color: '#F97316',
-    path: '/update-info',
-    Icon: RefreshCw,
-  },
-  {
     id: 'results',
     title: 'Xem kết quả đánh giá môn học',
     description: 'Kết quả đánh giá chi tiết môn học',

@@ -27,7 +27,8 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 const rolePermissions: Record<string, string[]> = {
   student: ['/subjects-to-evaluate', '/survey', '/survey-status', '/update-info'],
-  teacher: ['/evaluation-results', '/feedback-statistics', '/reports/subject', '/update-info'],
+  teacher: ['/evaluation-results', '/feedback-statistics', '/reports/subject', '/reports/teacher', '/update-info'],
+  lecturer: ['/evaluation-results', '/feedback-statistics', '/reports/subject', '/reports/teacher', '/update-info'],
   department: ['/reports/subject', '/reports/teacher', '/export-report', '/reports/school'],
   academic_affairs: [
     '/survey-management',

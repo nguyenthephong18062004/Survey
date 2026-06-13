@@ -38,8 +38,20 @@ export default function ExportReportPage() {
       setIsExporting(false)
       setExportSuccess(true)
       setTimeout(() => {
-        const fileName = `bao_cao_${reportType}_${Date.now()}.${selectedFormat}`
-        alert(`Đang tải file: ${fileName}`)
+        const fileExtension = selectedFormat === 'excel' ? 'xlsx' : 'pdf'
+        const fileName = `bao_cao_${reportType}_${Date.now()}.${fileExtension}`
+        
+        // Tạo file ảo để tải xuống
+        const fileContent = `Dữ liệu báo cáo mẫu cho: ${reportType}\nĐịnh dạng: ${selectedFormat.toUpperCase()}\nNgày xuất: ${new Date().toLocaleString()}`;
+        const blob = new Blob([fileContent], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', fileName);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
       }, 500)
     }, 2000)
   }
