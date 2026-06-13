@@ -2,6 +2,11 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 import swaggerUi from 'swagger-ui-express';
 import authRoutes from './routes/auth.js';
 import subjectRoutes from './routes/subjects.js';
@@ -36,6 +41,17 @@ app.use('/api/semesters', semesterRoutes);
 app.use('/api/assignments', assignmentRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/reports', reportsRoutes);
+
+// Phục vụ giao diện Frontend (production)
+const clientDistPath = path.join(__dirname, '../client/dist');
+if (fs.existsSync(clientDistPath)) {
+  app.use(express.static(clientDistPath));
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(clientDistPath, 'index.html'));
+  });
+} else {
+  console.log('Khong tim thay thu muc client/dist. Server chay o che do chi API.');
+}
 
 // Error handling middleware
 app.use((err, req, res, next) => {
