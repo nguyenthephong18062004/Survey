@@ -13,5 +13,12 @@ const pool = mysql.createPool({
   queueLimit: 0
 
 });
-
+pool.getConnection()
+  .then(conn => {
+    console.log("==> ĐÃ KẾT NỐI DATABASE RAILWAY THÀNH CÔNG! 🎉");
+    conn.release();
+  })
+  .catch(err => {
+    console.error("❌ Lỗi kết nối DB chi tiết tại đây:", err.message);
+  });
 export default pool;
