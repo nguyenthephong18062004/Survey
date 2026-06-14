@@ -51,6 +51,9 @@ if (fs.existsSync(clientDistPath)) {
   });
 } else {
   console.log('Khong tim thay thu muc client/dist. Server chay o che do chi API.');
+  app.get('/', (req, res) => {
+    res.send('<h2>SurveyUni API is running successfully!</h2><p>Server đang chạy ở chế độ Backend API. Vui lòng truy cập qua đường dẫn Frontend (Vercel) để sử dụng giao diện hệ thống.</p>');
+  });
 }
 
 // Error handling middleware
