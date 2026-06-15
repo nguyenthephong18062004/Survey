@@ -17,23 +17,25 @@ import {
 import { useAuth, type UserRole } from '../contexts/AuthContext'
 
 const roleInfo: Record<UserRole, { name: string; icon: LucideIcon; color: string; ring: string; btn: string }> =
-  {
-    student: { name: 'Sinh viên', icon: GraduationCap, color: 'blue', ring: 'focus:ring-blue-500', btn: 'bg-blue-600 hover:bg-blue-700' },
-    lecturer: { name: 'Giảng viên', icon: BookOpen, color: 'green', ring: 'focus:ring-green-500', btn: 'bg-green-600 hover:bg-green-700' },
-    department: { name: 'Khoa', icon: Building, color: 'purple', ring: 'focus:ring-purple-500', btn: 'bg-purple-600 hover:bg-purple-700' },
-    academic_affairs: {
-      name: 'Phòng Đào tạo',
-      icon: UserCog,
-      color: 'amber',
-      ring: 'focus:ring-amber-500',
-      btn: 'bg-amber-600 hover:bg-amber-700',
-    },
-    admin: { name: 'Quản trị viên', icon: Shield, color: 'red', ring: 'focus:ring-red-500', btn: 'bg-red-600 hover:bg-red-700' },
-  }
+{
+  student: { name: 'Sinh viên', icon: GraduationCap, color: 'blue', ring: 'focus:ring-blue-500', btn: 'bg-blue-600 hover:bg-blue-700' },
+  lecturer: { name: 'Giảng viên', icon: BookOpen, color: 'green', ring: 'focus:ring-green-500', btn: 'bg-green-600 hover:bg-green-700' },
+  teacher: { name: 'Giáo viên', icon: BookOpen, color: 'teal', ring: 'focus:ring-teal-500', btn: 'bg-teal-600 hover:bg-teal-700' },
+  department: { name: 'Khoa', icon: Building, color: 'purple', ring: 'focus:ring-purple-500', btn: 'bg-purple-600 hover:bg-purple-700' },
+  academic_affairs: {
+    name: 'Phòng Đào tạo',
+    icon: UserCog,
+    color: 'amber',
+    ring: 'focus:ring-amber-500',
+    btn: 'bg-amber-600 hover:bg-amber-700',
+  },
+  admin: { name: 'Quản trị viên', icon: Shield, color: 'red', ring: 'focus:ring-red-500', btn: 'bg-red-600 hover:bg-red-700' },
+}
 
 const roleIconBg: Record<UserRole, string> = {
   student: 'bg-blue-100',
   lecturer: 'bg-green-100',
+  teacher: 'bg-teal-100',
   department: 'bg-purple-100',
   academic_affairs: 'bg-amber-100',
   admin: 'bg-red-100',
@@ -42,6 +44,7 @@ const roleIconBg: Record<UserRole, string> = {
 const roleIconFg: Record<UserRole, string> = {
   student: 'text-blue-600',
   lecturer: 'text-green-600',
+  teacher: 'text-teal-600',
   department: 'text-purple-600',
   academic_affairs: 'text-amber-600',
   admin: 'text-red-600',
@@ -50,6 +53,7 @@ const roleIconFg: Record<UserRole, string> = {
 const roleText: Record<UserRole, string> = {
   student: 'text-blue-600',
   lecturer: 'text-green-600',
+  teacher: 'text-teal-600',
   department: 'text-purple-600',
   academic_affairs: 'text-amber-600',
   admin: 'text-red-600',
@@ -58,6 +62,7 @@ const roleText: Record<UserRole, string> = {
 const roleDemoBg: Record<UserRole, string> = {
   student: 'bg-blue-50 border-blue-200',
   lecturer: 'bg-green-50 border-green-200',
+  teacher: 'bg-teal-50 border-teal-200',
   department: 'bg-purple-50 border-purple-200',
   academic_affairs: 'bg-amber-50 border-amber-200',
   admin: 'bg-red-50 border-red-200',
@@ -66,6 +71,7 @@ const roleDemoBg: Record<UserRole, string> = {
 const roleDemoText: Record<UserRole, string> = {
   student: 'text-blue-900',
   lecturer: 'text-green-900',
+  teacher: 'text-teal-900',
   department: 'text-purple-900',
   academic_affairs: 'text-amber-900',
   admin: 'text-red-900',
@@ -74,6 +80,7 @@ const roleDemoText: Record<UserRole, string> = {
 const roleDemoMuted: Record<UserRole, string> = {
   student: 'text-blue-700',
   lecturer: 'text-green-700',
+  teacher: 'text-teal-700',
   department: 'text-purple-700',
   academic_affairs: 'text-amber-700',
   admin: 'text-red-700',
